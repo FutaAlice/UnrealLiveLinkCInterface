@@ -137,6 +137,18 @@ int UnrealLiveLink_HasConnection()
 	return LiveLinkProvider->HasConnection() ? UNREAL_LIVE_LINK_OK : UNREAL_LIVE_LINK_NOT_CONNECTED;
 }
 
+void UnrealLiveLink_InitMetadata(struct UnrealLiveLink_Metadata *metadata)
+{
+	metadata->keyValueCount = 0;
+	metadata->keyValues = 0;
+
+	metadata->timecode.hours = 0;
+	metadata->timecode.minutes = 0;
+	metadata->timecode.seconds = 0;
+	metadata->timecode.frames = 0;
+	metadata->timecode.format = UNREAL_LIVE_LINK_TIMECODE_UNKNOWN;
+}
+
 
 static void SetBasicFrameParameters(const char *subjectName, const double worldTime,
 	const UnrealLiveLink_Metadata *metadata, const UnrealLiveLink_PropertyValues *propValues, FLiveLinkFrameDataStruct &frameData)
@@ -256,6 +268,18 @@ void UnrealLiveLink_UpdateAnimationFrame(const char *subjectName, const double w
 }
 
 
+void UnrealLiveLink_InitTransform(struct UnrealLiveLink_Transform * transform)
+{
+	int i;
+	for (i = 0; i < 4; i++) {
+		transform->rotation[i] = 0.0f;
+	}
+	for (i = 0; i < 3; i++) {
+		transform->translation[i] = 0.0f;
+		transform->scale[i] = 1.0f;
+	}
+}
+
 void UnrealLiveLink_SetTransformStructure(const char *subjectName, const UnrealLiveLink_Properties *properties)
 {
 	FLiveLinkStaticDataStruct staticData(FLiveLinkTransformStaticData::StaticStruct());
@@ -286,6 +310,30 @@ void UnrealLiveLink_UpdateTransformFrame(const char *subjectName, const double w
 	LiveLinkProvider->UpdateSubjectFrameData(subjectName, MoveTemp(frameData));
 }
 
+
+void UnrealLiveLink_InitCameraStatic(struct UnrealLiveLink_CameraStatic *structure)
+{
+	structure->isFieldOfViewSupported = 0;
+	structure->isAspectRatioSupported = 0;
+	structure->isFocalLengthSupported = 0;
+	structure->isProjectionModeSupported = 0;
+	structure->filmBackWidth = -1.0f;
+	structure->filmBackHeight = -1.0f;
+	structure->isApertureSupported = 0;
+	structure->isFocusDistanceSupported = 0;
+}
+
+void UnrealLiveLink_InitCamera(struct UnrealLiveLink_Camera *structure)
+{
+	UnrealLiveLink_InitTransform(&(structure->transform));
+
+	structure->fieldOfView = 90.f;
+	structure->aspectRatio = 1.777778f;
+	structure->focalLength = 50.f;
+	structure->aperture = 2.8f;
+	structure->focusDistance = 100000.0f;
+	structure->isPerspective = 1;
+}
 
 void UnrealLiveLink_SetCameraStructure(
 	const char *subjectName, const UnrealLiveLink_Properties *properties, UnrealLiveLink_CameraStatic *structure)
@@ -334,6 +382,41 @@ void UnrealLiveLink_UpdateCameraFrame(const char *subjectName, const double worl
 	LiveLinkProvider->UpdateSubjectFrameData(subjectName, MoveTemp(frameData));
 }
 
+
+void UnrealLiveLink_InitLightStatic(struct UnrealLiveLink_LightStatic *structure)
+{
+	structure->isTemperatureSupported = 0;
+	structure->isIntensitySupported = 0;
+	structure->isLightColorSupported = 0;
+	structure->isInnerConeAngleSupported = 0;
+	structure->isOuterConeAngleSupported = 0;
+	structure->isAttenuationRadiusSupported = 0;
+	structure->isSourceLengthSupported = 0;
+	structure->isSourceRadiusSupported = 0;
+	structure->isSoftSourceRadiusSupported = 0;
+}
+
+void UnrealLiveLink_InitLight(struct UnrealLiveLink_Light *structure)
+{
+	int i;
+
+	UnrealLiveLink_InitTransform(&(structure->transform));
+
+	structure->temperature = 6500.0f;
+	structure->intensity = 3.1415926535897932f;
+
+	structure->innerConeAngle = 0.0f;
+	structure->outerConeAngle = 44.0f;
+	structure->attenuationRadius = 1000.0f;
+	structure->sourceRadius = 0.0f;
+	structure->softSourceRadius = 0.0f;
+	structure->sourceLength = 0.0f;
+
+	/* default white */
+	for (i = 0; i < 3; i++) {
+		structure->lightColor[i] = 255;
+	}
+}
 
 void UnrealLiveLink_SetLightStructure(
 	const char *subjectName, const UnrealLiveLink_Properties *properties, UnrealLiveLink_LightStatic *structure)

@@ -1,0 +1,10 @@
+project(CirclingTransform)
+
+INCLUDE_DIRECTORIES(
+	../UnrealLiveLinkCInterface
+)
+
+LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/../lib)
+ADD_EXECUTABLE(${PROJECT_NAME} CirclingTransform.cpp)
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} UnrealLiveLinkCInterface)
